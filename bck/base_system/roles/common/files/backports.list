@@ -1,0 +1,3 @@
+#buster backports
+
+deb http://ftp.debian.cz/debian/ buster-backports main contrib non-free

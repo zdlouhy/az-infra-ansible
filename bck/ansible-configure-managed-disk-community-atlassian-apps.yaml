@@ -1,0 +1,94 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+  - name: Create a new primary partition
+    community.general.parted:
+      device: /dev/disk/azure/scsi1/lun0
+      number: 1
+      state: present
+      #part_end: "100%"
+
+  - name: Create a volume group on top of lun0 with physical extent size 32MB
+    community.general.lvg:
+      vg: vg_data
+      pvs: /dev/disk/azure/scsi1/lun0-part1
+      pesize: "32"
+
+  - name: Create a logical volume
+    community.general.lvol:
+      vg: vg_data
+      lv: lv_opt_atlassian
+      size: 32G
+    when: "'group_A' in group_names"
+
+  - name: Create a logical volume
+    community.general.lvol:
+      vg: vg_data
+      lv: lv_opt_atlassian
+      size: 16G
+    when: "'group_B' in group_names"
+
+  - name: Create a logical volume
+    community.general.lvol:
+      vg: vg_data
+      lv: lv_var_atlassian
+      size: 100%FREE
+    when: ansible_facts['lvm']['vgs']['vg_data']['free_g'] | int > 0  
+
+  - name: Create a xfs filesystem 
+    community.general.filesystem:
+      fstype: xfs
+      dev: /dev/mapper/vg_data-lv_opt_atlassian
+      state: present
+
+  - name: Create a xfs filesystem 
+    community.general.filesystem:
+      fstype: xfs
+      dev: /dev/mapper/vg_data-lv_var_atlassian
+      state: present
+
+  - name: create data dir for mounting
+    file: path=/opt/atlassian state=directory
+
+  - name: create data dir for mounting
+    file: path=/var/atlassian state=directory
+
+  - name: Get UUID of the new filesystem
+    shell: |
+      blkid -s UUID -o value $(readlink -f /dev/mapper/vg_data-lv_opt_atlassian)
+    register: uuid_a
+
+  - name: Get UUID of the new filesystem
+    shell: |
+      blkid -s UUID -o value $(readlink -f /dev/mapper/vg_data-lv_var_atlassian)
+    register: uuid_b
+
+  - name: show real uuid_a
+    debug:
+      msg: "{{ uuid_a.stdout }}"
+
+  - name: show real uuid_a
+    debug:
+      msg: "{{ uuid_b.stdout }}"
+
+  - name: mount the dir
+    mount:
+      path: /opt/atlassian
+      src: "UUID={{ uuid_a.stdout }}"
+      fstype: xfs
+      state: mounted
+
+  - name: mount the dir
+    mount:
+      path: /var/atlassian
+      src: "UUID={{ uuid_b.stdout }}"
+      fstype: xfs
+      state: mounted
+
+  - name: check disk status
+    shell: df -h | grep /dev/mapper
+    register: df2_status
+
+  - debug: var=df2_status.stdout_lines

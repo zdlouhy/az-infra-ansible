@@ -1,0 +1,9 @@
+---
+ansible_lsb:
+  codename: 'buster'
+
+ansible_distribution: 'Debian'
+
+telegraf_agent_package: telegraf
+
+telegraf_agent_package_state: present

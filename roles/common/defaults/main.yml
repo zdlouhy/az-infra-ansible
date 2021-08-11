@@ -1,0 +1,47 @@
+---
+common_packages:
+  - gnupg
+  - ssh
+  - htop
+  - sysstat
+  - dnsutils
+  - iotop
+  - unzip
+  - file
+  - iftop
+  - ncdu
+  - mtr-tiny
+  - vim
+  - lsof
+  - strace
+  - tcpdump
+  - tmux
+  - screen
+  - curl
+  - net-tools
+  - tree
+  - sudo
+
+groups_present:
+  - name: kosik_ops
+    gid: 2000
+  - name: kosik_devops
+    gid: 2001
+  - name: ansible
+    gid: 2002
+
+groups_absent:
+
+users_present:
+  - name: ansible
+    groups: ['ansible']
+  - name: jakub.rohovsky
+    groups: ['kosik_ops']
+  - name: zdenek.dlouhy
+    groups: ['kosik_ops']
+
+
+users_absent:
+        #  - zdenek.dlouhy
+        #  - ansible
+        #  - jakub.rohovsky

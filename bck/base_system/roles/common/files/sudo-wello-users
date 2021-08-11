@@ -1,0 +1,7 @@
+# keep forwarded ssh-key
+Defaults    env_keep+=SSH_AUTH_SOCK
+
+# all systems
+#group %nubium_ops ALL=(ALL) NOPASSWD: ALL
+zdenek  ALL=(ALL) NOPASSWD: ALL
+ansible  ALL=(ALL) NOPASSWD: ALL

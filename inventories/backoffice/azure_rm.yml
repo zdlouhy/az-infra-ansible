@@ -1,0 +1,36 @@
+plugin: azure_rm
+
+#plugin: azure.azcollection.azure_rm
+
+auth_source: cli
+
+include_vm_resource_groups:
+- rg-backoffice-nautobot
+
+include_vmss_resource_groups:
+- '*'
+
+conditional_groups:
+  #  all_the_hosts: true
+  nautobot_hosts: "'nautobot' in name"
+
+  #hostvar_expressions:
+  #  my_host_var:
+  #  some_statically_valued_var: ""
+  #  ansible_host: (public_dns_hostnames + public_ipv4_addresses) | first
+
+hostnames:
+- tags.vm_name
+- default  # special var that uses the default hashed name
+
+keyed_groups:
+- prefix: tag
+  key: tags
+- prefix: azure_loc
+  key: location
+- prefix: some_tag
+  key: tags.sometag | default('none')
+
+#exclude_host_filters:
+#- location in ['eastus']
+#- powerstate != 'running'

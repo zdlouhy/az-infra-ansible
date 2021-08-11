@@ -1,0 +1,8 @@
+---
+# Apply common configuration to all hosts
+- hosts: all
+  become: yes
+
+  roles:
+  - common
+  - telegraf

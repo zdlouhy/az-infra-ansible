@@ -1,0 +1,114 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- name: Create backports-repository
+  copy: src=backports.list dest=/etc/apt/sources.list.d/backports.list
+
+- name: install some useful base system packages
+  apt: name={{ item }} state=present
+  with_items:
+   - linux-image-5.9.0-0.bpo.5-amd64={{ kernel_version }}*
+   - grub2
+   - bc
+   - gnupg
+   - virt-what
+   - openssh-client
+   - openssh-sftp-server
+   - openssh-server
+   - ssh
+   - htop
+   - sdparm
+   - atop 
+   - sysstat 
+   - dstat
+   - dnsutils
+   - iotop
+   - unzip
+   - ngrep
+   - file
+   - iftop
+   - man-db
+   - ncdu
+   - bind9-host
+   - bwm-ng
+   - mtr-tiny
+   - vim
+   - lsof
+   - strace
+   - telnet
+   - tcpdump
+   - screen
+   - tmux
+   - ncdu
+   - psmisc
+   - curl
+   - make
+   - net-tools
+   - jq
+   - gawk
+   - ruby-json
+   - pv
+   - tree
+   - linux-image-amd64
+   - dmidecode
+   - sudo
+   - python3-pip
+
+- name: Set vimrc
+  copy: src=vimrc dest=/root/.vimrc
+
+- name: Set bashrc
+  copy: src=bashrc dest=/root/.bashrc
+
+- name: Set sudo
+  copy: src=sudo-wello-users dest=/etc/sudoers.d/sudo-wello-users
+
+
+- name: Ensure group "ansible" exist
+  group:
+    name: ansible
+    state: present
+    gid: 8997
+
+#create ansible user
+- name: Add ansible user
+  user:
+    name: ansible
+    shell: /bin/bash
+    append: yes
+    uid: 8997
+    group: ansible
+
+
+# -------------
+# Ssh keys
+# -------------
+
+- name: Zdenek key
+  authorized_key:
+    user: zdenek
+    state: present
+    key: "{{ lookup('file', '/home/zdenek/git/wello_gitlab/ansible/base_system/roles/common/files/zd-web.pub') }}"
+    manage_dir: False
+
+- name: ansible key
+  authorized_key:
+    user: ansible
+    state: present
+    key: "{{ lookup('file', '/home/zdenek/git/wello_gitlab/ansible/base_system/roles/common/files/ansible.pub') }}"
+    manage_dir: False
+
+
+# disabled swap
+- name: Disable swap
+  command: swapoff -a
+
+- name: Disable SWAP in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw.*)$'
+    replace: '# \1'
+

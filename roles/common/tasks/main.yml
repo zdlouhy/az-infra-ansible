@@ -1,0 +1,51 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- name: 'Print message'
+  debug:
+    msg: 'Ahoj !!'
+
+- name: Set timezone to Europe/Prague
+  timezone:
+    name: Europe/Prague
+
+- include: ../../common_tasks/users.yml
+
+# --------------------
+# Ubuntu specific tasks
+# --------------------
+- name: install official ubuntu src list
+  template:
+    src: templates/source_lists/ubuntu.list.j2 
+    dest: /etc/apt/sources.list.d/ubuntu.list
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install some useful base system packages
+  apt: name={{ common_packages }} state=present
+  when: ansible_distribution == 'Ubuntu'
+
+  #- name: install some useful base system packages
+  #  zypper: name={{ common_packages }} state=present
+  #  when: ansible_distribution == 'SLES'
+
+- name: set custom bashrc profile for root
+  copy: src=bashrc dest=/root/.bashrc
+  when: ansible_distribution == 'Ubuntu'
+
+- name: set custom vimrc profile for root
+  copy: src=vimrc dest=/root/.vimrc
+
+- name: Sudo for ansible user
+  copy:
+    dest: /etc/sudoers.d/70-ansible-user
+    content: |
+      %ansible ALL=(ALL) NOPASSWD:ALL
+
+- name: Sudo for kosik_ops group
+  copy:
+    dest: /etc/sudoers.d/75-kosik_ops
+    content: |
+      %kosik_ops ALL=(ALL) NOPASSWD:ALL

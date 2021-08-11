@@ -1,0 +1,60 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+
+#-------------
+# LVM + mount
+#-------------
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_k4q1_nfs
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_k4q2_nfs
+    pvs: 
+      - /dev/disk/azure/scsi1/lun1-part1
+    pesize: "4"
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_k4q1_nfs
+    lv: lv_k4q1_nfs
+    size: 262140M
+
+- name: create a logical volume log
+  lvol:
+    vg: vg_k4q2_nfs
+    lv: lv_k4q2_nfs
+    size: 262140M
+
+
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'] }}"
+    #    #
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'].partitions['name'] }}"

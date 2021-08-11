@@ -1,0 +1,23 @@
+[Unit]
+Description=Nautobot Celery Worker
+Documentation=https://nautobot.readthedocs.io/en/stable/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+Environment="NAUTOBOT_ROOT={{ nautobot_root }}"
+
+User={{ nautobot_os_user }}
+Group={{ nautobot_os_group }}
+PIDFile=/var/tmp/nautobot-worker.pid
+WorkingDirectory={{ nautobot_root }}
+
+ExecStart={{ nautobot_root }}/.local/bin/nautobot-server celery worker --loglevel INFO --pidfile /var/tmp/nautobot-worker.pid
+
+Restart=always
+RestartSec=30
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

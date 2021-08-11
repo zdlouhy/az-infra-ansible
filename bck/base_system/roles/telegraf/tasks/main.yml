@@ -1,0 +1,71 @@
+---
+
+- name: "Debian | Ensure the system can use the HTTPS transport for APT"
+  stat:
+    path: /usr/lib/apt/methods/https
+  register: apt_https_transport
+
+- name: "Debian | Install APT HTTPS transport"
+  apt:
+    name: "apt-transport-https"
+    state: present
+  register: are_telegraf_dependencies_packages_installed
+  until: are_telegraf_dependencies_packages_installed is succeeded
+  when:
+    - not apt_https_transport.stat.exists
+
+- name: "Debian | Download Telegraf apt key"
+  apt_key:
+    url: "https://repos.influxdata.com/influxdb.key"
+    id: 2582E0C5
+    state: present
+  register: are_telegraf_dependencies_keys_installed
+  until: are_telegraf_dependencies_keys_installed is succeeded
+
+
+- name: Prints two lines of messages, but only if there is an environment value set
+  debug:
+    msg:
+    - "{{ ansible_distribution|lower }}"
+    - "{{ ansible_lsb.codename }}"
+
+ 
+- name: "Debian | Add Telegraf repository (using LSB)"
+  apt_repository:
+    repo: "deb https://repos.influxdata.com/{{ ansible_distribution|lower }} {{ ansible_lsb.codename }} stable"
+    filename: "telegraf.list"
+    state: present
+  when:
+    - ansible_lsb is defined
+    - ansible_lsb.codename is defined
+
+- name: "Debian | Install Telegraf package (repo)"
+  apt:
+    name: "{{ telegraf_agent_package }}"
+    state: "{{ telegraf_agent_package_state }}"
+    update_cache: yes
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+  notify: "Restart Telegraf"
+
+- name: Copy input/output configs
+  copy:
+    src: 'telegraf.conf'
+    dest: '/etc/telegraf/'
+    owner: root
+    group: root
+    mode: 0644
+  notify: "Restart Telegraf"
+
+- name: Copy input/output configs
+  copy:
+    src: '{{item}}'
+    dest: '/etc/telegraf/telegraf.d/'
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - prometheus_output.conf
+    - system_input.conf
+  notify: "Restart Telegraf"
+

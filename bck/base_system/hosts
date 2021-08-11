@@ -1,0 +1,15 @@
+[gitlab]
+virt1.wello.prod
+gitlab1.wello.prod
+jenkins1.wello.prod
+elk1.wello.prod
+kube-master1.wello.prod
+kube-node1.wello.prod
+kube-node2.wello.prod
+db1.wello.prod
+#docker1.wello.prod
+ca-relay2.wello.prod
+ca-relay1.wello.prod
+ca-producer1.wello.prod
+#lb1.wello.prod
+#wls1.wello.prod

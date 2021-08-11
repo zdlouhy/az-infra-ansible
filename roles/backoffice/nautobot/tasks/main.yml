@@ -1,0 +1,155 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+
+- name: install mysql server
+  apt: 
+    name:
+      - mysql-server={{ mysql_server_version }}
+      - redis-server={{ redis_server_version }}
+      - libmysqlclient-dev
+      - python-mysqldb
+      - python3-mysqldb
+      - python3-venv
+      - nginx={{ nginx_version }}
+      - libldap2-dev 
+      - libsasl2-dev 
+      - libssl-dev
+    state: present
+
+    #- name: Install bottle python package
+    #  pip:
+    #    name: pymysql
+    #    executable: pip3
+ 
+    #- name: Install bottle python package
+    #  pip:
+    #    name: pymysql
+
+- name: Create a new database with name 'nautobot'
+  mysql_db:
+    name: "{{ dbname }}"
+    state: present
+
+- name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+  mysql_user:
+    name: "{{ dbuser }}"
+    password: "{{ dbpassword }}"
+    priv: 'nautobot.*:ALL,GRANT'
+    state: present
+
+
+# create user and group
+- name: Ensure group "nautobot" exist
+  group:
+    name: "{{ nautobot_os_group }}"
+    state: present
+    gid: 8990
+ 
+- name: Add the user 'nautobot' with a specific uid and a primary group of 'nautobot'
+  ansible.builtin.user:
+    name: "{{ nautobot_os_user }}"
+    comment: Nautobot user
+    uid: 8990
+    group: "{{ nautobot_os_group }}"
+    shell: /bin/bash
+    home: "{{ nautobot_root }}"
+
+- name: set custom bashrc profile for nautobot user
+  copy: src=bashrc dest="{{ nautobot_root }}/.bashrc"
+
+- name: create python3 venv for nautobot user
+  command:
+    cmd: sudo -u nautobot python3 -m venv "{{ nautobot_root }}"
+    creates: "{{ nautobot_root }}/bin"
+
+- name: install pip, wheel for nautobot user
+  command: 
+    cmd: 'pip3 install --upgrade pip wheel mysqlclient'
+  become_user: nautobot
+
+- name: install nautobot
+  command:
+    cmd: 'pip3 install nautobot=={{ nautobot_version }}'
+    #  become: yes
+  become_user: nautobot
+    #
+
+- name: install django-auth-ldap
+  command:
+    cmd: 'pip3 install django-auth-ldap'
+    #  become: yes
+  become_user: nautobot
+
+- name: install pip, wheel for nautobot user
+  command:
+    cmd: 'su - nautobot -c nautobot-server init'
+    creates: "/opt/nautobot/.nautobot/nautobot_config.py"
+    #  become_user: nautobot
+
+
+- name: set nautobot config
+  template: 
+    src: nautobot_config.py.j2 
+    dest: "{{ nautobot_root }}/.nautobot/nautobot_config.py"
+
+- name: nautbot config symlink
+  file:
+    src: "{{ nautobot_root }}/.nautobot/nautobot_config.py"
+    dest: "{{ nautobot_root }}/nautobot_config.py"
+    mode: 0644
+    state: link
+
+- name: create folder for config lockfiles
+  file:
+    path: "{{ nautobot_root }}/.config_lock"
+    state: directory
+    mode: 0775
+    owner: "{{ nautobot_os_user }}"
+    group: "{{ nautobot_os_group }}"
+
+
+    #- name: nautobot initial migrate
+    #  command:
+    #    cmd: 'su - nautobot -c nautobot-server migrate'
+    #    creates: "/opt/nautobot/.config_lock/.nautobot_migrate.lock"
+    #    #  become_user: nautobot
+
+    #- name: nautobot create static folders
+    #  command:
+    #    cmd: 'su - nautobot -c nautobot-server collectstatic'
+    #    creates: "/opt/nautobot/.nautobot/static"
+    #  become_user: nautobot
+
+- name: uWSGI config
+  copy: 
+    src: uwsgi.ini 
+    dest: "{{ nautobot_root }}/uwsgi.ini"
+    #    owner: "{{ nautobot_os_user }}"
+    #    group: "{{ nautobot_os_group }}"
+
+- name: nautobot systemd service
+  template:
+    src: nautobot.service.j2
+    dest: /etc/systemd/system/nautobot.service
+
+- name: nautobot-worker systemd service
+  template:
+    src: nautobot-worker.service.j2
+    dest: /etc/systemd/system/nautobot-worker.service
+
+
+
+# -----------------
+# nginx setup
+# -----------------
+- name: nginx vhost
+  copy:
+    src: nautobot.conf
+    dest: "/etc/nginx/sites-available/nautobot.conf"
+
+
+

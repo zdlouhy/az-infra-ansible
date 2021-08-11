@@ -1,0 +1,41 @@
+---
+# manage groups
+- name: manage present groups
+  group:
+    name: "{{ item.name }}"
+    state: present
+    gid: "{{ item.gid }}"
+  with_items: "{{ groups_present }}"
+  when: groups_present is iterable
+
+- name: manage absent groups
+  group:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ groups_absent }}"
+  when: groups_absent is iterable
+
+# manage users
+- name: manage present users with group membership
+  user:
+    name: "{{ item.name }}"
+    shell: /bin/bash
+    groups: "{{ item.groups }}"
+  with_items: "{{ users_present }}"
+  when: users_present is iterable
+
+- name: "Add authorized keys"
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', 'files/pub_keys/'+item.name+'.key.pub') }}"
+  with_items: "{{ users_present }}"
+  when: users_present is iterable
+
+- name: manage absent users with group membership
+  user:
+    name: "{{ item }}"
+    state: absent
+    force: yes
+    remove: yes
+  with_items: "{{ users_absent }}"
+  when:  users_absent is iterable
