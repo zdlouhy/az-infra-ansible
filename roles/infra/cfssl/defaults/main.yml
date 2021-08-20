@@ -1,0 +1,8 @@
+---
+cfssl_home: /home/cfssl
+cfssl_os_user: cfssl
+cfssl_os_group: cfssl
+cfssl_version: '1.6.0'
+new_go_version: 1.17
+
+kosikca_config: /opt/kosikca

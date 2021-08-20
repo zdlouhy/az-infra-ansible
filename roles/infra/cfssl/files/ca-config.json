@@ -1,0 +1,25 @@
+{
+  "signing": {
+    "default": {
+      "expiry": "17520h",
+      "usage": [
+        "signing",
+        "key encipherment",
+        "server auth",
+        "client auth",
+        "cert sign"
+      ]
+    },
+    "profiles": {
+      "kosik": {
+        "expiry": "17520h",
+        "usages": [
+          "signing",
+          "digital signature",
+          "key encipherment",
+          "server auth"
+        ]
+      }
+    }
+  }
+}

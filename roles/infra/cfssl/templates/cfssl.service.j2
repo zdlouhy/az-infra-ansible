@@ -1,0 +1,12 @@
+[Unit]
+Description=cfssl-kosik
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/cfssl/bin/cfssl serve -address 0.0.0.0 -ca /opt/kosikca/ca.pem -ca-key /opt/kosikca/ca.key -config /opt/kosikca/ca-config.json
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

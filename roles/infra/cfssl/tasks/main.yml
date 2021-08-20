@@ -1,0 +1,139 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+# create user and group
+- name: Ensure group "cfssl" exist
+  group:
+    name: "{{ cfssl_os_group }}"
+    state: present
+    gid: 8990
+
+- name: Add the user 'cfssl' with a specific uid and a primary group of 'cfssl'
+  ansible.builtin.user:
+    name: "{{ cfssl_os_user }}"
+    comment: cfssl user
+    uid: 8990
+    group: "{{ cfssl_os_group }}"
+    shell: /bin/bash
+    home: "{{ cfssl_home }}"
+
+    #- name: check current golang version
+    #  command: bash -c "/usr/local/go/bin/go version|sed -e 's/go version go//g'|cut -d' ' -f1"
+    #  ignore_errors: yes
+    #  register: go_version
+    #  changed_when: false
+    #
+    #- debug: msg="go_version={{go_version.stdout}}"
+    #- debug: msg="new_go_version={{new_go_version}}"
+    #
+    #  #- name: continue only when version is older
+    #  #  fail: msg="Version already exists"
+    #  #  when: go_version.stdout != "" and "go_version.stdout | version_compare('{{new_go_version}}', operator='ge', strict=True)"
+    #
+    #- name: download golang tar 
+    #  get_url:
+    #    url: "https://storage.googleapis.com/golang/go{{new_go_version}}.linux-amd64.tar.gz"
+    #    dest: "{{ cfssl_home}}"
+    #    mode: 0440
+    #  when: go_version.stdout == "" or "go_version.stdout | version_compare('{{new_go_version}}', operator='le', strict=True)"
+    #
+    #- name: Remove old installation of Go
+    #  file:
+    #    path: /usr/local/go
+    #    state: absent
+    #  become: yes
+    #  when: go_version.stdout == "" or "go_version.stdout | version_compare('{{new_go_version}}', operator='ge', strict=True)"
+    #
+    #- name: Extract the Go tarball
+    #  unarchive:
+    #    src: "{{ cfssl_home }}/go{{new_go_version}}.linux-amd64.tar.gz"
+    #    dest: /usr/local
+    #    copy: no
+    #  become: yes
+    #  when: go_version.stdout == "" or "go_version.stdout | version_compare('{{new_go_version}}', operator='le', strict=True)"
+    #
+    #- name: create go directories in home
+    #  file:
+    #    path: "{{item}}"
+    #    state: directory
+    #    owner: "{{ cfssl_os_user }}"
+    #    group: "{{ cfssl_os_group }}"
+    #    mode: 0775
+    #  with_items:
+    #  - "{{ cfssl_home }}/go"
+    #  - "{{ cfssl_home }}/go/bin"
+    #  when: go_version.stdout == "" or "go_version.stdout | version_compare('{{new_go_version}}', operator='le', strict=True)"
+    #
+    #- name: modify .bashrc
+    #  blockinfile:
+    #    dest: "{{ cfssl_home }}/.bashrc"
+    #    block: |
+    #      export GOPATH=$HOME/go
+    #      export GOBIN=$GOPATH/bin
+    #      export PATH=$GOBIN:$PATH:/usr/local/go/bin
+    #    marker: '# {mark} ANSIBLE MANAGED BLOCK - changes for golang'
+    #    insertafter: EOF
+    #    create: yes 
+    #  when: go_version.stdout == "" or "go_version.stdout | version_compare('{{new_go_version}}', operator='le', strict=True)"
+
+  
+# ---------------
+# CFSSL
+# ---------------
+
+- name: mkdir for cfssl bin
+  file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+  - "/usr/local/cfssl"
+  - "/usr/local/cfssl/bin"
+
+- name: stat cfssl
+  stat:
+    path: "/usr/local/cfssl/bin/cfssl_{{cfssl_version}}_linux_amd64"
+  register: cfssl_stat
+
+- name: download cfssl
+  get_url:
+    url: "https://github.com/cloudflare/cfssl/releases/download/v{{cfssl_version}}/cfssl_{{cfssl_version}}_linux_amd64"
+    dest: "/usr/local/cfssl/bin/cfssl"
+    owner: "{{cfssl_os_user}}"
+    group: "{{cfssl_os_group}}"
+    mode: 0755
+  when: cfssl_stat.stat.exists == False
+
+
+- name: Move cfssl to bin dir
+  command: "mv /usr/local/cfssl/bin/cfssl/cfssl_{{cfssl_version}}_linux_amd64 /usr/local/cfssl/bin/cfssl/cfssl"
+  when: cfssl_stat.stat.exists
+
+- name: cfssl systemd service
+  template:
+    src: cfssl.service.j2
+    dest: /etc/systemd/system/cfssl.service
+
+- name: create go directories in home
+  file:
+    path: "{{kosikca_config}}"
+    state: directory
+    owner: "{{cfssl_os_user}}"
+    group: "{{cfssl_os_group}}"
+    mode: 0644
+
+- name: copy ca-config
+  copy: 
+    src: ca-config.json
+    dest: "{{kosikca_config}}"
+
+    #- name: Copy cfssl to bin directory
+    #  copy:
+    #    src: "/tmp/cfssl_{{ cfssl_version }}_linux_amd64"
+    #    dest: "/usr/local/cfssl/bin/cfssl/"
+    #    owner: "{{ cfssl_os_user }}"
+    #    group: "{{ cfssl_os_group }}"
+    #    mode: '0644'
+    #  become: yes
