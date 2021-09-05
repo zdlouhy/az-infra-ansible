@@ -6,23 +6,13 @@ module: github_repo
 short_description: Manage your repos on Github
 '''
 
-EXAMPLES = '''
-- name: Create a github Repo
-  github_repo:
-    github_auth_key: "..."
-    name: "Hello-World"
-    description: "This is your first repository"
-    private: yes
-    has_issues: no
-    has_wiki: no
-    has_downloads: no
-  register: result
-- name: Delete that repo 
-  github_repo:
-    github_auth_key: "..."
-    name: "Hello-World"
-    state: absent
-  register: result
+EXAMPLE = '''
+kosik_certificate:
+  hosts:
+    - 'myhostname.p.mfit.systems'
+    - 'myothername.p.mfit.systems'
+  profile: 'kosik'
+  state: present|absent
 '''
 
 from ansible.module_utils.basic import *
@@ -30,7 +20,7 @@ import os
 import requests
 import json
 
-CFSSLHOST = "http://10.97.64.8:8888"
+CFSSLHOST = "http://10.191.0.5:8888"
 
 def api_request(method, request):
   """ Sends request to CFSSL API
@@ -64,8 +54,8 @@ def certificate_present(data):
     if os.path.isfile(certfile) == False:
        # Generate certificate request
        response_newkey = api_request("newkey",
-         { "hosts": data.hosts,
-           "CN": data.hosts[0],
+         { "hosts": data['hosts'],
+           "CN": data['hosts'][0],
            "key": {
              "algo": "rsa",
              "size": 2048
@@ -75,33 +65,56 @@ def certificate_present(data):
        key = response_newkey["private_key"]
 
        # Sign certificate request
-       response_sign = api_request("sign", {"certificate_request": csr,"profile": CFSSLPROFILE})
+       response_sign = api_request("sign", {"certificate_request": csr,"profile": data['profile']})
        crt = response_sign["certificate"]
 
        # Store certificate and key to disk
        write_file(keyfile, key)
        write_file(certfile, crt)
+      
+       msg = "certificate {} successfully created and signed".format(certfile) 
+
+       return False, True, msg
 
     else:
-      pass
+       msg = "certificate {} located".format(certfile)       
 
+       return False, False, msg
 
+def certificate_absent(data):
+    default_crt_store = "/etc/ssl/certs"
+    default_key_store = "/etc/ssl/private"
+
+    certfile = default_crt_store+"/"+data['hosts'][0]+".crt"
+    keyfile = default_key_store+"/"+data['hosts'][0]+".key"
+
+    if os.path.isfile(certfile) == True and os.path.isfile(keyfile) == True:
+       os.remove(certfile)
+       os.remove(keyfile)
+       msg = "cert file {} and key file {} removed".format(certfile, keyfile)
+    
+       return False, True, msg
+
+    else:
+       msg = "cert file {} or key file {} missing"
+       
+       return True, False, msg
 
 def main():
 
     fields = {
         "hosts": {"required": True, "type": "list"},
-        "profile": {"required": True, "type": "string"},
+        "profile": {"required": True, "type": "str"},
         "state": {
             "default": "present",
             "choices": ['present', 'absent'],
             "type": 'str'
-        },
+        }
     }
 
     choice_map = {
      "present": certificate_present,
-   #  "absent": github_repo_absent,
+     "absent": certificate_absent,
     }
 
     module = AnsibleModule(argument_spec=fields)

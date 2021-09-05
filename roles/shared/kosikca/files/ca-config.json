@@ -11,7 +11,7 @@
       ]
     },
     "profiles": {
-      "kosik": {
+      "kosik_ssl": {
         "expiry": "17520h",
         "usages": [
           "signing",
@@ -20,6 +20,13 @@
           "server auth"
         ]
       }
+    },
+    "kosik_vpn": {
+      "expiry": "8766h",
+      "usages": [
+          "signing",
+          "client auth"
+      ]
     }
   }
 }

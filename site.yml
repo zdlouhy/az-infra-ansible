@@ -25,13 +25,16 @@
     #  roles:
     #  - sap/cz/pred/ascs
 
-    #- hosts: nautobot_hosts
-    #  become: yes
-    #  roles:
-
-    #  - backoffice/nautobot
-
-- hosts: ops_testing
+- hosts: nautobot_hosts
   become: yes
   roles:
-  - infra/cfssl
+  - backoffice/nautobot
+
+- hosts: shared_hosts
+  become: yes
+  roles:
+  - shared/kosikca
+    #- hosts: ops_testing
+    #  become: yes
+    #  roles:
+    #  - infra/cfssl

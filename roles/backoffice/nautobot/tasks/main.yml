@@ -18,6 +18,9 @@
       - libldap2-dev 
       - libsasl2-dev 
       - libssl-dev
+      - libxmlsec1-dev
+      - libxmlsec1-openssl
+      - pkg-config
     state: present
 
     #- name: Install bottle python package
@@ -29,6 +32,16 @@
     #  pip:
     #    name: pymysql
 
+- name: ssl cert
+  kosik_certificate:
+    hosts: 
+      - nautobot01.mfit.systems
+      - ipam.mfit.systems
+    profile: server
+    state: present
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    
 - name: Create a new database with name 'nautobot'
   mysql_db:
     name: "{{ dbname }}"
@@ -81,6 +94,12 @@
 - name: install django-auth-ldap
   command:
     cmd: 'pip3 install django-auth-ldap'
+    #  become: yes
+  become_user: nautobot
+
+- name: install saml
+  command:
+    cmd: 'pip3 install social-auth-core[saml]'
     #  become: yes
   become_user: nautobot
 

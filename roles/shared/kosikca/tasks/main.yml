@@ -4,21 +4,21 @@
     file: defaults/main.yml
     name: main
 
-# create user and group
-- name: Ensure group "cfssl" exist
-  group:
-    name: "{{ cfssl_os_group }}"
-    state: present
-    gid: 8990
-
-- name: Add the user 'cfssl' with a specific uid and a primary group of 'cfssl'
-  ansible.builtin.user:
-    name: "{{ cfssl_os_user }}"
-    comment: cfssl user
-    uid: 8990
-    group: "{{ cfssl_os_group }}"
-    shell: /bin/bash
-    home: "{{ cfssl_home }}"
+    ## create user and group
+    #- name: Ensure group "cfssl" exist
+    #  group:
+    #    name: "{{ cfssl_os_group }}"
+    #    state: present
+    #    gid: 8990
+    #
+    #- name: Add the user 'cfssl' with a specific uid and a primary group of 'cfssl'
+    #  ansible.builtin.user:
+    #    name: "{{ cfssl_os_user }}"
+    #    comment: cfssl user
+    #    uid: 8990
+    #    group: "{{ cfssl_os_group }}"
+    #    shell: /bin/bash
+    #    home: "{{ cfssl_home }}"
 
     #- name: check current golang version
     #  command: bash -c "/usr/local/go/bin/go version|sed -e 's/go version go//g'|cut -d' ' -f1"
@@ -101,8 +101,6 @@
   get_url:
     url: "https://github.com/cloudflare/cfssl/releases/download/v{{cfssl_version}}/cfssl_{{cfssl_version}}_linux_amd64"
     dest: "/usr/local/cfssl/bin/cfssl"
-    owner: "{{cfssl_os_user}}"
-    group: "{{cfssl_os_group}}"
     mode: 0755
   when: cfssl_stat.stat.exists == False
 
@@ -120,8 +118,6 @@
   file:
     path: "{{kosikca_config}}"
     state: directory
-    owner: "{{cfssl_os_user}}"
-    group: "{{cfssl_os_group}}"
     mode: 0644
 
 - name: copy ca-config
