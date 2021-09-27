@@ -38,10 +38,24 @@ users_present:
   - name: jakub.rohovsky
     groups: ['kosik_ops']
   - name: zdenek.dlouhy
-    groups: ['kosik_ops']
-
+    groups: ['kosik_ops','kosik_devops']
+  - name: vaclav.sedivy
+    groups: ['kosik_ops','kosik_devops']
 
 users_absent:
         #  - zdenek.dlouhy
         #  - ansible
         #  - jakub.rohovsky
+
+
+ca_path_debian: /usr/local/share/ca-certificates
+ca_path:
+  RedHat:
+    6: /usr/local/share/ca-certificates
+    7: /etc/pki/ca-trust/source/anchors
+  Debian:
+    7: '{{ ca_path_debian }}'
+    8: '{{ ca_path_debian }}'
+    20: '{{ ca_path_debian }}' #focal
+  SUSE:
+    15: /usr/share/pki/trust/anchors

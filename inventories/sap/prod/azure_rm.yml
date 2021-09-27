@@ -5,14 +5,27 @@ plugin: azure_rm
 auth_source: cli
 
 include_vm_resource_groups:
-- rg-sandbox-sapdev-hanadb
+- rg-sap-cz-prod-hanadb
+- rg-sap-cz-prod-nfs
+- rg-sap-cz-prod-dialog
+- rg-sap-cz-prod-ascs
+- rg-sap-cz-prod-replika
+- rg-sap-cz-prod-pdf
+- rg-sap-cz-prod-wp
 
 include_vmss_resource_groups:
 - '*'
 
 conditional_groups:
   #  all_the_hosts: true
-  hana_db_hosts: "'vma4s' in name"
+  sap_cz_prod_hana_db_hosts: "'vma4p' in name"
+  sap_cz_prod_nfs_hosts: "'vmk4pnfs' in name"
+  sap_cz_prod_ascs_hosts: "'vmk4pascs' in name"
+  sap_cz_prod_dialog_hosts: "'vmk4p0' in name"
+  sap_cz_prod_replika_hosts: "'vmkrp0' in name"
+  sap_cz_prod_pdf_hosts: "'vmkjp0' in name"
+  sap_cz_prod_wp_hosts: "'vmkwp' in name"
+
 
   #hostvar_expressions:
   #  my_host_var:

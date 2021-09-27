@@ -1,0 +1,41 @@
+---
+# Apply common configuration to all hosts
+- hosts: all
+  become: yes
+  roles:
+  - ../roles/common
+
+- hosts: sap_cz_prod_hana_db_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/hanadb
+
+- hosts: sap_cz_prod_nfs_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/nfs
+
+- hosts: sap_cz_prod_ascs_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/ascs
+
+- hosts: sap_cz_prod_dialog_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/dialog
+
+- hosts: sap_cz_prod_replika_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/replika
+
+- hosts: sap_cz_prod_pdf_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/pdf
+
+- hosts: sap_cz_prod_wp_hosts
+  become: yes
+  roles:
+  - ../roles/sap/cz/prod/wp

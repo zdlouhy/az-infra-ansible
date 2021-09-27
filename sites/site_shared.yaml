@@ -1,0 +1,12 @@
+---
+# Apply common configuration to all hosts
+- hosts: all
+  become: yes
+  roles:
+  - ../common
+
+- hosts: shared_hosts
+  become: yes
+  roles:
+  - ../shared/kosikca
+

@@ -5,7 +5,7 @@ plugin: azure_rm
 auth_source: cli
 
 include_vm_resource_groups:
-- RG-BACKOFFICE-NAUTOBOT
+- rg-backoffice-cz-prod-nautobot
 
 include_vmss_resource_groups:
 - '*'

@@ -1,0 +1,8 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+

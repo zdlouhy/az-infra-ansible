@@ -14,9 +14,6 @@
 
 - include: ../../common_tasks/users.yml
 
-# --------------------
-# Ubuntu specific tasks
-# --------------------
 - name: install official ubuntu src list
   template:
     src: templates/source_lists/ubuntu.list.j2 
@@ -27,13 +24,40 @@
   apt: name={{ common_packages }} state=present
   when: ansible_distribution == 'Ubuntu'
 
-  #- name: install some useful base system packages
-  #  zypper: name={{ common_packages }} state=present
-  #  when: ansible_distribution == 'SLES'
-
 - name: set custom bashrc profile for root
   copy: src=bashrc dest=/root/.bashrc
   when: ansible_distribution == 'Ubuntu'
+
+# Update ca certs
+- name: install ca package on rhel systems
+  yum:
+    name: ca-certificates
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: install ca package on debian systems
+  apt:
+    name: ca-certificates
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: enable dynamic ca configuration on rhel6
+  shell: "/bin/update-ca-trust enable"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+
+  #- name: copy certificate authority to trusted ca path of the os
+  #  copy:
+  #    src: '{{ item }}'
+  #    dest: '{{ ca_path[ansible_os_family][ansible_distribution_major_version|int] }}/'
+  #    owner: root
+  #    group: root
+  #    mode: 0644
+  #  with_fileglob:
+  #    - files/ca/*
+  #  notify:
+  #    - update trusted ca debian
+  #    - update trusted ca redhat
 
 - name: set custom vimrc profile for root
   copy: src=vimrc dest=/root/.vimrc

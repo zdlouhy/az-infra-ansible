@@ -1,0 +1,186 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+    #- include: ../../../../../common_tasks/users.yml 
+
+#-------------
+# LVM + mount
+#-------------
+- name: create new partitions
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun2
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun3
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun4
+    number: 1
+    state: present
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_data
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+      - /dev/disk/azure/scsi1/lun1-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_log
+    pvs: 
+      - /dev/disk/azure/scsi1/lun2-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_shared
+    pvs:
+      - /dev/disk/azure/scsi1/lun3-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_usrsap
+    pvs:
+      - /dev/disk/azure/scsi1/lun4-part1
+    pesize: "4"
+
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_data
+    lv: lv_data
+    #    opts: "-i3 -l 4096"
+    size: 262136M
+
+- name: create a logical volume log
+  lvol:
+    vg: vg_log
+    lv: lv_log
+    # opts: "-i3 -l 4096"
+    size: 131068M
+
+- name: create a logical volume shared
+  lvol:
+    vg: vg_shared
+    lv: lv_shared
+    #opts: "-i3 -l 4096"
+    size: 131068M
+
+- name: create a logical volume shared
+  lvol:
+    vg: vg_usrsap
+    lv: lv_usrsap
+    #opts: "-i3 -l 4096"
+    size: 131068M
+
+- name: create a xfs filesystem on lv_shared
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_shared-lv_shared
+
+- name: create a xfs filesystem on lv_data
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_data-lv_data
+
+- name: create a xfs filesystem on lv_log
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_log-lv_log
+
+- name: create a xfs filesystem on lb_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_usrsap-lv_usrsap
+
+
+
+- name: create mountpoint directory
+  file: 
+    path: "/hana"
+    state: directory
+
+- name: Get UUID of the hanadb lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_data-lv_data)
+  register: uuid_data
+
+- name: mount data
+  mount:
+    path: /hana/data
+    src: "UUID={{ uuid_data.stdout }}"
+    fstype: xfs
+    state: mounted
+
+- name: Get UUID of the log lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_log-lv_log)
+  register: uuid_log
+
+- name: mount log
+  mount:
+    path: /hana/log
+    src: "UUID={{ uuid_log.stdout }}"
+    fstype: xfs
+    state: mounted
+
+
+- name: Get UUID of the shared lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_shared-lv_shared)
+  register: uuid_shared
+
+- name: mount shared
+  mount:
+    path: /hana/shared
+    src: "UUID={{ uuid_shared.stdout }}"
+    fstype: xfs
+    state: mounted
+
+
+- name: Get UUID of the usrsap lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_usrsap-lv_usrsap)
+  register: uuid_usrsap
+
+- name: mount usrsap
+  mount:
+    path: /usr/sap
+    src: "UUID={{ uuid_usrsap.stdout }}"
+    fstype: xfs
+    state: mounted
+
+
+    #- name: test hash
+    #  debug:
+    #    msg: "{{ item.name }}"
+    #  with_items: "{{ lvm_config['lvg'] }}"
+    #
+    #- name: test hash
+    #  debug:
+    #    msg: "{{ item.name }}"
+    #  with_items: "{{ lvm_config['lvg'].partitions['name'] }}"

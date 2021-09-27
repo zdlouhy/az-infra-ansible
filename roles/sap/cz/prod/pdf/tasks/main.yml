@@ -1,0 +1,100 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+
+#-------------
+# LVM + mount
+#-------------
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_usrsap
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun1 with physical extent size 4MB
+  lvg:
+    vg: vg_sapdb
+    pvs:
+      - /dev/disk/azure/scsi1/lun1-part1
+    pesize: "4"
+
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_usrsap
+    lv: lv_usrsap
+    size: 131068M
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_sapdb
+    lv: lv_sapdb
+    size: 131068M
+
+- name: create mountpoint directory
+  file:
+    path: "/sapdb"
+    state: directory
+
+
+- name: create a xfs filesystem on lv_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_usrsap-lv_usrsap
+
+- name: Get UUID of the lv_usrsap lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_usrsap-lv_usrsap)
+  register: uuid_usrsap
+
+- name: mount usrsap
+  mount:
+    path: /usr/sap
+    src: "UUID={{ uuid_usrsap.stdout }}"
+    fstype: xfs
+    state: mounted  
+
+- name: create a xfs filesystem on lv_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_sapdb-lv_sapdb
+
+- name: Get UUID of the lv_usrsap lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_sapdb-lv_sapdb)
+  register: uuid_sapdb
+
+- name: mount sapdb
+  mount:
+    path: /sapdb
+    src: "UUID={{ uuid_sapdb.stdout }}"
+    fstype: xfs
+    state: mounted
+
+
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'] }}"
+    #    #
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'].partitions['name'] }}"

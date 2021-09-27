@@ -4,16 +4,28 @@
     file: defaults/main.yml
     name: main
 
+- name: Add an Apt signing key for postgres
+  ansible.builtin.apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+ 
+- name: add postgres apt repository
+  apt_repository: 
+    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main' 
+    state: present 
+    filename: postgress
+    update_cache: yes
 
-- name: install mysql server
+- name: install nautobot prerequisites
   apt: 
     name:
-      - mysql-server={{ mysql_server_version }}
+      - postgresql={{ postgresql_server_version }}
       - redis-server={{ redis_server_version }}
-      - libmysqlclient-dev
-      - python-mysqldb
-      - python3-mysqldb
+      - python3-postgresql
       - python3-venv
+      - python3-pip
+      - libpq-dev
+      - python3-psycopg2
       - nginx={{ nginx_version }}
       - libldap2-dev 
       - libsasl2-dev 
@@ -35,24 +47,41 @@
 - name: ssl cert
   kosik_certificate:
     hosts: 
-      - nautobot01.mfit.systems
+      - vmnautobot01.backoffice-int.mfit.systems
+      - nautobot.backoffice-int.mfit.systems
       - ipam.mfit.systems
     profile: server
     state: present
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    
-- name: Create a new database with name 'nautobot'
-  mysql_db:
+
+- name: Create a new nautobot database
+  postgresql_db:
     name: "{{ dbname }}"
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+
+    #- name: Create a new database with name 'nautobot'
+    #  mysql_db:
+    #    name: "{{ dbname }}"
+    #    state: present
+
+- name: All privs. to nautobot database
+  postgresql_user:
+    db: "{{ dbname }}"
+    name: "{{ dbuser }}"
+    priv: "ALL/ALL"
+    password: "{{ dbpassword }}"
     state: present
 
-- name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
-  mysql_user:
-    name: "{{ dbuser }}"
-    password: "{{ dbpassword }}"
-    priv: 'nautobot.*:ALL,GRANT'
-    state: present
+    #- name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+    #  mysql_user:
+    #    name: "{{ dbuser }}"
+    #    password: "{{ dbpassword }}"
+    #    priv: 'nautobot.*:ALL,GRANT'
+    #    state: present
 
 
 # create user and group
@@ -79,35 +108,43 @@
     cmd: sudo -u nautobot python3 -m venv "{{ nautobot_root }}"
     creates: "{{ nautobot_root }}/bin"
 
+    #- name: install pip, wheel for nautobot user
+    #  command: 
+    #    cmd: 'pip3 install --upgrade pip wheel'
+    #  pip3:
+    #    name: 
+    #    state: forcereinstall
+    #  become_user: nautobot
+    #  become: yes
+
 - name: install pip, wheel for nautobot user
-  command: 
-    cmd: 'pip3 install --upgrade pip wheel mysqlclient'
+  pip:
+    name: 
+     - wheel
+     - pip
+    extra_args: --upgrade
+    executable: pip3
   become_user: nautobot
+  # become_method: su
+  #  become: yes
 
 - name: install nautobot
-  command:
-    cmd: 'pip3 install nautobot=={{ nautobot_version }}'
-    #  become: yes
-  become_user: nautobot
-    #
-
-- name: install django-auth-ldap
-  command:
-    cmd: 'pip3 install django-auth-ldap'
-    #  become: yes
+  pip:
+    name:
+     - "nautobot=={{ nautobot_version }}"
+     - social-auth-core[saml]
+     - django-auth-ldap
+    executable: pip3
   become_user: nautobot
 
-- name: install saml
-  command:
-    cmd: 'pip3 install social-auth-core[saml]'
-    #  become: yes
-  become_user: nautobot
 
-- name: install pip, wheel for nautobot user
-  command:
-    cmd: 'su - nautobot -c nautobot-server init'
-    creates: "/opt/nautobot/.nautobot/nautobot_config.py"
-    #  become_user: nautobot
+  #- name: nautobot server init 
+  #  command:
+  #    cmd: 'nautobot-server init'
+  #    creates: "/opt/nautobot/.nautobot/nautobot_config.py"
+  #  become: yes
+  #  # become_method: su
+  #  become_user: nautobot
 
 
 - name: set nautobot config
@@ -149,6 +186,14 @@
     dest: "{{ nautobot_root }}/uwsgi.ini"
     #    owner: "{{ nautobot_os_user }}"
     #    group: "{{ nautobot_os_group }}"
+
+- name: nautbot vhost symlink
+  file:
+    src: "/etc/nginx/sites-available/nautobot.conf"
+    dest: "/etc/nginx/sites-enabled/nautobot.conf"
+    mode: 0644
+    state: link
+
 
 - name: nautobot systemd service
   template:

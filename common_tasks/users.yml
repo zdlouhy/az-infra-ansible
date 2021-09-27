@@ -24,7 +24,7 @@
   with_items: "{{ users_present }}"
   when: users_present is iterable
 
-- name: "Add authorized keys"
+- name: Add authorized keys
   authorized_key:
     user: "{{ item.name }}"
     key: "{{ lookup('file', 'files/pub_keys/'+item.name+'.key.pub') }}"
