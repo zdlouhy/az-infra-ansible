@@ -58,7 +58,7 @@
   lvg:
     vg: vg_log
     pvs: 
-      - /dev/disk/azure/scsi1/lun2-part1
+      - /dev/disk/azure/scsi1/lun5-part1
     pesize: "4"
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
