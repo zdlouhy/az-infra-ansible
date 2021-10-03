@@ -1,0 +1,41 @@
+plugin: azure_rm
+
+#plugin: azure.azcollection.azure_rm
+
+auth_source: cli
+
+include_vm_resource_groups:
+- rg-sapdev-cz-test-hanadb
+- rg-sapdev-cz-test-dialog
+- rg-sapdev-cz-test-pdf
+
+include_vmss_resource_groups:
+- '*'
+
+conditional_groups:
+  #  all_the_hosts: true
+  sap_cz_test_hana_db_hosts: "'vma4t0' in name"
+  sap_cz_test_dialog_hosts: "'vmk4t0' in name"
+  sap_cz_test_pdf_hosts: "'vmkjd0' in name"
+
+
+  #hostvar_expressions:
+  #  my_host_var:
+  #  some_statically_valued_var: ""
+  #  ansible_host: (public_dns_hostnames + public_ipv4_addresses) | first
+
+hostnames:
+- tags.vm_name
+- default  # special var that uses the default hashed name
+
+keyed_groups:
+- prefix: tag
+  key: tags
+- prefix: azure_loc
+  key: location
+- prefix: some_tag
+  key: tags.sometag | default('none')
+
+#exclude_host_filters:
+#- location in ['eastus']
+#- powerstate != 'running'

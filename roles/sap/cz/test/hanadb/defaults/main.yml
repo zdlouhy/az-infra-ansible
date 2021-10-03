@@ -1,6 +1,9 @@
 ---
 groups_present:
-  - sapdev
+  - name: sapdev
+    gid: 2003
+  - name: sapsys
+    gid: 1001
 
 groups_absent:
 
@@ -16,6 +19,7 @@ users_present:
 users_absent:
         #  - test.user
         #  - test.user2
+
 
 lvm_config:
   lvg:  

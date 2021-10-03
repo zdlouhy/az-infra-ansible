@@ -1,0 +1,150 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+
+#-------------
+# LVM + mount
+#-------------
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+
+- name: create new prim. partition lun2
+  parted:
+    device: /dev/disk/azure/scsi1/lun2
+    number: 1
+    state: present
+
+- name: create new prim. partition lun3
+  parted:
+    device: /dev/disk/azure/scsi1/lun3
+    number: 1
+    state: present
+
+- name: create new prim. partition lun4
+  parted:
+    device: /dev/disk/azure/scsi1/lun4
+    number: 1
+    state: present
+
+- name: Create a volume group on top of lun0-2 with physical extent size 4MB
+  lvg:
+    vg: vg_usrsap
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+      - /dev/disk/azure/scsi1/lun1-part1
+      - /dev/disk/azure/scsi1/lun2-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun3 with physical extent size 4MB
+  lvg:
+    vg: vg_transfer
+    pvs:
+      - /dev/disk/azure/scsi1/lun3-part1
+    pesize: "4"
+
+- name: Create a volume group on top of lun4 with physical extent size 4MB
+  lvg:
+    vg: vg_sapmnt
+    pvs:
+      - /dev/disk/azure/scsi1/lun4-part1
+    pesize: "4"
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_usrsap
+    lv: lv_usrsap
+    size: 393204M
+
+- name: create a logical volume transfer
+  lvol:
+    vg: vg_transfer
+    lv: lv_transfer
+    size: 131068M
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_sapmnt
+    lv: lv_sapmnt
+    size: 32764M
+
+- name: create a xfs filesystem on lv_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_usrsap-lv_usrsap
+
+- name: Get UUID of the lv_usrsap lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_usrsap-lv_usrsap)
+  register: uuid_usrsap
+
+- name: mount usrsap
+  mount:
+    path: /usr/sap
+    src: "UUID={{ uuid_usrsap.stdout }}"
+    fstype: xfs
+    state: mounted  
+
+    #transfer
+- name: create a xfs filesystem on lv_transfer
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_transfer-lv_transfer
+
+- name: Get UUID of the lv_transfer lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_transfer-lv_transfer)
+  register: uuid_transfer
+
+- name: mount transfer
+  mount:
+    path: /transfer
+    src: "UUID={{ uuid_transfer.stdout }}"
+    fstype: xfs
+    state: mounted
+
+    #sapmnt
+- name: create a xfs filesystem on lv_sapmnt
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_sapmnt-lv_sapmnt
+
+- name: Get UUID of the lv_sapmnt lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_sapmnt-lv_sapmnt)
+  register: uuid_sapmnt
+
+- name: mount sapmnt
+  mount:
+    path: /sapmnt
+    src: "UUID={{ uuid_sapmnt.stdout }}"
+    fstype: xfs
+    state: mounted
+
+- name: create trans directory
+  file:
+    path: "/usr/sap/trans"
+    state: directory
+
+
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'] }}"
+    #    #
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'].partitions['name'] }}"

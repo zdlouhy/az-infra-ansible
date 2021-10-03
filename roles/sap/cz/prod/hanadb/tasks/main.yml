@@ -45,6 +45,11 @@
     number: 1
     state: present
 
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun6
+    number: 1
+    state: present
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
@@ -61,6 +66,7 @@
     pvs: 
       - /dev/disk/azure/scsi1/lun3-part1
       - /dev/disk/azure/scsi1/lun4-part1
+      - /dev/disk/azure/scsi1/lun6-part1
     pesize: "4"
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
@@ -82,7 +88,7 @@
     vg: vg_log
     lv: lv_log
     # opts: "-i3 -l 4096"
-    size: 524280M
+    size: 786420M
 
 - name: create a logical volume shared
   lvol:

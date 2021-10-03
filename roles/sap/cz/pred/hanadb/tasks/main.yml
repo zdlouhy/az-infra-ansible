@@ -45,7 +45,6 @@
     number: 1
     state: present
 
-
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
     vg: vg_data
