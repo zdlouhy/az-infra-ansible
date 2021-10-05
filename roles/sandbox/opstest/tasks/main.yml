@@ -6,28 +6,47 @@
 
     #- include: ../../../../../common_tasks/users.yml 
 
+# https://download.opensuse.org/repositories/devel:/languages:/go/
+- name: Add go development repository
+  zypper_repository:
+    repo: 'https://download.opensuse.org/repositories/devel:/languages:/go/SLE_15_SP2'
+    auto_import_keys: yes
+    name: "go.repo"
+    state: present
+
+- name: Install telegraf
+  zypper:
+    name: telegraf
+    state: latest
+
+- name: Start service telegraf, if not started
+  ansible.builtin.service:
+    name: telegraf
+    state: started
+
+    
 #-------------
 # LVM + mount
 #-------------
-- name: create new prim. partition lun0
-  parted:
-    device: /dev/disk/azure/scsi1/lun0
-    number: 1
-    state: present
-
-- name: create new prim. partition lun1
-  parted:
-    device: /dev/disk/azure/scsi1/lun1
-    number: 1
-    state: present
-
-
-- name: Create a volume group on top of lun0 with physical extent size 4MB
-  lvg:
-    vg: vg_test1
-    pvs: 
-      - /dev/disk/azure/scsi1/lun1-part1
-    pesize: "4"
+#- name: create new prim. partition lun0
+#  parted:
+#    device: /dev/disk/azure/scsi1/lun0
+#    number: 1
+#    state: present
+#
+#- name: create new prim. partition lun1
+#  parted:
+#    device: /dev/disk/azure/scsi1/lun1
+#    number: 1
+#    state: present
+#
+#
+#- name: Create a volume group on top of lun0 with physical extent size 4MB
+#  lvg:
+#    vg: vg_test1
+#    pvs: 
+#      - /dev/disk/azure/scsi1/lun1-part1
+#    pesize: "4"
 
     #- name: Create a volume group on top of lun0 with physical extent size 4MB
     #  lvg:
