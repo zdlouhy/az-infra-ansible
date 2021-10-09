@@ -34,19 +34,23 @@ groups_absent:
 
 users_present:
   - name: ansible
+    uid: 4000
     groups: ['ansible']
   - name: jakub.rohovsky
-    groups: ['kosik_ops']
+    uid: 4001
+    groups: ['kosik_ops','kosik_devops']    
   - name: zdenek.dlouhy
+    uid: 4002
     groups: ['kosik_ops','kosik_devops']
   - name: vaclav.sedivy
+    uid: 4003
     groups: ['kosik_ops','kosik_devops']
 
 users_absent:
         #  - zdenek.dlouhy
         #  - ansible
         #  - jakub.rohovsky
-
+        #  - vaclav.sedivy
 
 ca_path_debian: /usr/local/share/ca-certificates
 ca_path:

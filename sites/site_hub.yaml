@@ -5,8 +5,8 @@
   roles:
   - ../roles/common
 
-- hosts: shared_hosts
+- hosts: coredns_hosts
   become: yes
   roles:
-  - ../roles/shared/kosikca
+  - ../roles/hub/coredns
 

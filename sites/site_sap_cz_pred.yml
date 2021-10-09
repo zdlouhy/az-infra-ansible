@@ -3,25 +3,26 @@
 - hosts: all
   become: yes
   roles:
-  - common
+  - ../roles/common
+    #  - ../roles/monitoring/telegraf
 
 - hosts: sap_cz_pred_hana_db_hosts
   become: yes
   roles:
-  - sap/cz/pred/hanadb
+  - ../roles/sap/cz/pred/hanadb
 
 - hosts: sap_cz_pred_nfs_hosts
   become: yes
   roles:
-  - sap/cz/pred/nfs
+  - ../roles/sap/cz/pred/nfs
 
 - hosts: sap_cz_pred_dialog_hosts
   become: yes
   roles:
-  - sap/cz/pred/dialog
+  - ../roles/sap/cz/pred/dialog
 
 - hosts: sap_cz_pred_ascs_hosts
   become: yes
   roles:
-  - sap/cz/pred/ascs
+  - ../roles/sap/cz/pred/ascs
 

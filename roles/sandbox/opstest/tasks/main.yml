@@ -6,47 +6,65 @@
 
     #- include: ../../../../../common_tasks/users.yml 
 
+
 # https://download.opensuse.org/repositories/devel:/languages:/go/
-- name: Add go development repository
-  zypper_repository:
-    repo: 'https://download.opensuse.org/repositories/devel:/languages:/go/SLE_15_SP2'
-    auto_import_keys: yes
-    name: "go.repo"
-    state: present
-
-- name: Install telegraf
-  zypper:
-    name: telegraf
-    state: latest
-
-- name: Start service telegraf, if not started
-  ansible.builtin.service:
-    name: telegraf
-    state: started
+#- name: Add go development repository
+#  zypper_repository:
+#    repo: 'https://download.opensuse.org/repositories/devel:/languages:/go/SLE_15_SP2'
+#    auto_import_keys: yes
+#    name: "go.repo"
+#    state: present
+#  when: ansible_distribution" == "SLES"
+#
+#- name: Install telegraf
+#  zypper:
+#    name: telegraf
+#    state: latest
+#  when: ansible_distribution" == "SLES"
+#
+#- name: Start service telegraf, if not started
+#  ansible.builtin.service:
+#    name: telegraf
+#    state: started
 
     
-#-------------
-# LVM + mount
-#-------------
-#- name: create new prim. partition lun0
-#  parted:
-#    device: /dev/disk/azure/scsi1/lun0
-#    number: 1
-#    state: present
-#
-#- name: create new prim. partition lun1
-#  parted:
-#    device: /dev/disk/azure/scsi1/lun1
-#    number: 1
-#    state: present
-#
-#
-#- name: Create a volume group on top of lun0 with physical extent size 4MB
-#  lvg:
-#    vg: vg_test1
-#    pvs: 
-#      - /dev/disk/azure/scsi1/lun1-part1
-#    pesize: "4"
+    #-------------
+    # LVM + mount
+    #-------------
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+
+- name: create new prim. partition lun2
+  parted:
+    device: /dev/disk/azure/scsi1/lun2
+    number: 1
+    state: present
+
+- name: create new prim. partition lun3
+  parted:
+    device: /dev/disk/azure/scsi1/lun3
+    number: 1
+    state: present
+
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_test1
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+      - /dev/disk/azure/scsi1/lun1-part1
+      - /dev/disk/azure/scsi1/lun2-part1
+      - /dev/disk/azure/scsi1/lun3-part1
+    pesize: "4"
 
     #- name: Create a volume group on top of lun0 with physical extent size 4MB
     #  lvg:
@@ -54,12 +72,13 @@
     #    pvs: 
     #      - /dev/disk/azure/scsi1/lun1-part1
     #    pesize: "4"
-    #
-    #- name: create a logical volume data
-    #  lvol:
-    #    vg: vg_k4q1_nfs
-    #    lv: lv_k4q1_nfs
-    #    size: 262140M
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_test1
+    lv: lv_test1
+    opts: "-i 4 -I 128k"
+    size: 65520M
 
     #- name: create a logical volume log
     #  lvol:
@@ -67,32 +86,32 @@
     #    lv: lv_test1
     #    size: 32764M
     #
-    #- name: create a xfs filesystem on lv_test1
-    #  filesystem:
-    #    fstype: xfs
-    #    dev: /dev/mapper/vg_test1-lv_test1
+- name: create a xfs filesystem on lv_test1
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_test1-lv_test1
     #
     #- name: create a xfs filesystem on lv_log
     #  filesystem:
     #    fstype: xfs
     #    dev: /dev/mapper/vg_test1-lv_test1
     #
-    #- name: create mountpoint directory
-    #  file:
-    #    path: "/mnt/test1"
-    #    state: directory
+- name: create mountpoint directory
+  file:
+    path: "/mnt/test1"
+    state: directory
     #
-    #- name: Get UUID of the hanadb lvm filesystem
-    #  shell: |
-    #    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_test1-lv_test1)
-    #  register: uuid_test1
+- name: Get UUID of the hanadb lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_test1-lv_test1)
+  register: uuid_test1
     #
-    #- name: mount data
-    #  mount:
-    #    path: /mnt/test1
-    #    src: "UUID={{ uuid_test1.stdout }}"
-    #    fstype: xfs
-    #    state: mounted
+- name: mount data
+  mount:
+    path: /mnt/test1
+    src: "UUID={{ uuid_test1.stdout }}"
+    fstype: xfs
+    state: mounted
 
 
     #    #- name: test hash

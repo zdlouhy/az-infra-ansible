@@ -9,7 +9,7 @@
 #-------------
 # LVM + mount
 #-------------
-- name: create new partitions
+- name: create new partition lun0
   parted:
     device: /dev/disk/azure/scsi1/lun0
     number: 1
@@ -21,27 +21,39 @@
     number: 1
     state: present
 
-- name:
+- name: create new prim. partition lun2
   parted:
     device: /dev/disk/azure/scsi1/lun2
     number: 1
     state: present
 
-- name:
+- name: create new prim. partition lun3
   parted:
     device: /dev/disk/azure/scsi1/lun3
     number: 1
     state: present
 
-- name:
+- name: create new prim. partition lun4
   parted:
     device: /dev/disk/azure/scsi1/lun4
     number: 1
     state: present
 
-- name:
+- name: create new prim. partition lun5
   parted:
     device: /dev/disk/azure/scsi1/lun5
+    number: 1
+    state: present
+
+- name: create new prim. partition lun6
+  parted:
+    device: /dev/disk/azure/scsi1/lun6
+    number: 1
+    state: present
+
+- name: create new prim. partition lun7
+  parted:
+    device: /dev/disk/azure/scsi1/lun7
     number: 1
     state: present
 
@@ -58,6 +70,8 @@
   lvg:
     vg: vg_log
     pvs: 
+      - /dev/disk/azure/scsi1/lun3-part1
+      - /dev/disk/azure/scsi1/lun4-part1
       - /dev/disk/azure/scsi1/lun5-part1
     pesize: "4"
 
@@ -65,30 +79,29 @@
   lvg:
     vg: vg_shared
     pvs:
-      - /dev/disk/azure/scsi1/lun3-part1
+      - /dev/disk/azure/scsi1/lun6-part1
     pesize: "4"
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
     vg: vg_usrsap
     pvs:
-      - /dev/disk/azure/scsi1/lun4-part1
+      - /dev/disk/azure/scsi1/lun7-part1
     pesize: "4"
-
 
 - name: create a logical volume data
   lvol:
     vg: vg_data
     lv: lv_data
-    #    opts: "-i3 -l 4096"
-    size: 262136M
+    opts: "-i3 -I 256K"
+    size: 393204M
 
 - name: create a logical volume log
   lvol:
     vg: vg_log
     lv: lv_log
-    # opts: "-i3 -l 4096"
-    size: 131068M
+    opts: "-i3 -I 64K"
+    size: 393204M
 
 - name: create a logical volume shared
   lvol:

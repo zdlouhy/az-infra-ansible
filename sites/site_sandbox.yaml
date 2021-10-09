@@ -9,4 +9,4 @@
   become: yes
   roles:
   - ../roles/sandbox/opstest
-
+  - ../roles/monitoring/telegraf

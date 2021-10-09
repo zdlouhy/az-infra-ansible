@@ -45,6 +45,30 @@
     number: 1
     state: present
 
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun6
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun7
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun8
+    number: 1
+    state: present
+
+- name:
+  parted:
+    device: /dev/disk/azure/scsi1/lun9
+    number: 1
+    state: present
+
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
     vg: vg_data
@@ -52,43 +76,46 @@
       - /dev/disk/azure/scsi1/lun0-part1
       - /dev/disk/azure/scsi1/lun1-part1
       - /dev/disk/azure/scsi1/lun2-part1
+      - /dev/disk/azure/scsi1/lun3-part1
+      - /dev/disk/azure/scsi1/lun4-part1
+      - /dev/disk/azure/scsi1/lun5-part1
     pesize: "4"
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
     vg: vg_log
     pvs: 
-      - /dev/disk/azure/scsi1/lun3-part1
-      - /dev/disk/azure/scsi1/lun4-part1
+      - /dev/disk/azure/scsi1/lun6-part1
+      - /dev/disk/azure/scsi1/lun7-part1
+      - /dev/disk/azure/scsi1/lun8-part1
     pesize: "4"
 
 - name: Create a volume group on top of lun0 with physical extent size 4MB
   lvg:
     vg: vg_shared
     pvs:
-      - /dev/disk/azure/scsi1/lun5-part1
+      - /dev/disk/azure/scsi1/lun9-part1
     pesize: "4"
 
 - name: create a logical volume data
   lvol:
     vg: vg_data
     lv: lv_data
-    #    opts: "-i3 -l 4096"
-    size: 1572852M
+    opts: "-i6 -I 256K"
+    size: 1572840M
 
 - name: create a logical volume log
   lvol:
     vg: vg_log
     lv: lv_log
-    # opts: "-i3 -l 4096"
-    size: 524280M
+    opts: "-i3 -I 64K"
+    size: 393204M
 
 - name: create a logical volume shared
   lvol:
     vg: vg_shared
     lv: lv_shared
-    #opts: "-i3 -l 4096"
-    size: 1048572M
+    size: 524284M
 
 - name: create a xfs filesystem on lv_shared
   filesystem:

@@ -59,6 +59,8 @@
   #    - update trusted ca debian
   #    - update trusted ca redhat
 
+  # https://download.opensuse.org/repositories/devel:/languages:/go/
+
 - name: set custom vimrc profile for root
   copy: src=vimrc dest=/root/.vimrc
 

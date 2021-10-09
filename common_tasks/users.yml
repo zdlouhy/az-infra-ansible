@@ -20,6 +20,7 @@
   user:
     name: "{{ item.name }}"
     shell: /bin/bash
+    uid: "{{ item.uid }}"
     groups: "{{ item.groups }}"
   with_items: "{{ users_present }}"
   when: users_present is iterable

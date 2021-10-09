@@ -10,10 +10,10 @@
   roles:
   - ../roles/sap/cz/test/hanadb
 
-- hosts: sap_cz_test_dialog_hosts
-  become: yes
-  roles:
-  - ../roles/sap/cz/test/dialog
+    #- hosts: sap_cz_test_dialog_hosts
+    #  become: yes
+    #  roles:
+    #  - ../roles/sap/cz/test/dialog
 
 - hosts: sap_cz_test_pdf_hosts
   become: yes

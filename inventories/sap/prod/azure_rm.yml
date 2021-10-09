@@ -18,7 +18,7 @@ include_vmss_resource_groups:
 
 conditional_groups:
   #  all_the_hosts: true
-  sap_cz_prod_hana_db_hosts: "'vma4p' in name"
+  sap_cz_prod_hana_db_hosts: "'vma4p0' in name"
   sap_cz_prod_nfs_hosts: "'vmk4pnfs' in name"
   sap_cz_prod_ascs_hosts: "'vmk4pascs' in name"
   sap_cz_prod_dialog_hosts: "'vmk4p0' in name"
@@ -27,10 +27,10 @@ conditional_groups:
   sap_cz_prod_wp_hosts: "'vmkwp' in name"
 
 
-  #hostvar_expressions:
+hostvar_expressions:
   #  my_host_var:
   #  some_statically_valued_var: ""
-  #  ansible_host: (public_dns_hostnames + public_ipv4_addresses) | first
+  ansible_host: (public_dns_hostnames + private_ipv4_addresses) | first
 
 hostnames:
 - tags.vm_name
