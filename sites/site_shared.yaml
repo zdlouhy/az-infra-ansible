@@ -5,8 +5,17 @@
   roles:
   - ../roles/common
 
-- hosts: shared_hosts
+- hosts: shared_kosikca_hosts
   become: yes
   roles:
   - ../roles/shared/kosikca
 
+- hosts: shared_prometheus_hosts
+  become: yes
+  roles:
+  - ../roles/shared/prometheus
+
+- hosts: shared_promxy_hosts
+  become: yes
+  roles:
+  - ../roles/shared/promxy

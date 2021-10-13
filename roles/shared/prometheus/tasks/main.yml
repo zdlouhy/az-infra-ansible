@@ -1,0 +1,81 @@
+---
+
+# LVM layout
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_data
+    pvs:
+      - /dev/disk/azure/scsi1/lun0-part1
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_data
+    lv: lv_data
+    opts: "-i1 -I 64K"
+    size: 131068M
+
+- name: create a xfs filesystem on lv_data
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_data-lv_data
+
+- name: create mountpoint directory
+  file:
+    path: "/mnt/data"
+    state: directory
+
+- name: Get UUID of the data lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_data-lv_data)
+  register: uuid_data
+
+- name: mount test data
+  mount:
+    path: "/mnt/data"
+    src: "UUID={{ uuid_data.stdout }}"
+    fstype: xfs
+    state: mounted
+
+- name: Gather variables for each operating system
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+  tags:
+    - prometheus_configure
+    - prometheus_install
+    - prometheus_run
+
+- include: preflight.yml
+  tags:
+    - prometheus_configure
+    - prometheus_install
+    - prometheus_run
+
+- include: install.yml
+  become: true
+  tags:
+    - prometheus_install
+
+- include: configure.yml
+  become: true
+  tags:
+    - prometheus_configure
+
+- name: ensure prometheus service is started and enabled
+  become: true
+  systemd:
+    daemon_reload: true
+    name: prometheus
+    state: started
+    enabled: true
+  tags:
+    - prometheus_run

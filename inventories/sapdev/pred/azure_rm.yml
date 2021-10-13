@@ -15,7 +15,7 @@ include_vmss_resource_groups:
 
 conditional_groups:
   #  all_the_hosts: true
-  sap_cz_pred_hana_db_hosts: "'vma4q02' in name"
+  sap_cz_pred_hana_db_hosts: "'vma4q0' in name"
   sap_cz_pred_nfs_hosts: "'vmk4qnfs0' in name"
   sap_cz_pred_dialog_hosts: "'vmk4q0' in name"
   sap_cz_pred_ascs_hosts: "'vmk4qascs0' in name"

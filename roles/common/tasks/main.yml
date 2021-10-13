@@ -21,7 +21,10 @@
   when: ansible_distribution == 'Ubuntu'
 
 - name: install some useful base system packages
-  apt: name={{ common_packages }} state=present
+  apt: 
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: yes
   when: ansible_distribution == 'Ubuntu'
 
 - name: set custom bashrc profile for root
