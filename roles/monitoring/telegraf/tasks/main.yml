@@ -16,6 +16,33 @@
     update_cache: yes
   when: ansible_distribution == "SLES"
 
+- name: Create telegraf conf directory
+  file:
+    path: /etc/telegraf.d
+    state: directory
+    mode: '0755'
+
+- name: Install telegraf config
+  copy:
+    src: 'telegraf.conf'
+    dest: '/etc/telegraf/'
+    owner: root
+    group: root
+    mode: 0755
+  notify: "Restart Telegraf"
+
+- name: Copy telegraf input/output configs
+  copy:
+    src: '{{item}}'
+    dest: '/etc/telegraf/telegraf.d/'
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - prometheus_output.conf
+    - system_input.conf
+  notify: "Restart Telegraf"
+
 - name: Start service telegraf, if not started
   ansible.builtin.service:
     name: telegraf
