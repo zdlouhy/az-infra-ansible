@@ -1,5 +1,4 @@
 ---
-# manage groups
 - name: manage present groups
   group:
     name: "{{ item.name }}"
@@ -15,7 +14,6 @@
   with_items: "{{ groups_absent }}"
   when: groups_absent is iterable
 
-# manage users
 - name: manage present users with group membership
   user:
     name: "{{ item.name }}"

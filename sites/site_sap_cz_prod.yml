@@ -4,6 +4,7 @@
   become: yes
   roles:
   - ../roles/common
+  - ../roles/monitoring/telegraf
 
 - hosts: sap_cz_prod_hana_db_hosts
   become: yes

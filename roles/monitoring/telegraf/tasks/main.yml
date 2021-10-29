@@ -1,5 +1,5 @@
 ---
-- name: Add go development repository
+- name: Add go repository for SLES
   zypper_repository:
     repo: 'https://download.opensuse.org/repositories/devel:/languages:/go/SLE_15_SP2'
     auto_import_keys: yes
@@ -9,12 +9,32 @@
     - ansible_distribution == "SLES"
     - ansible_distribution_major_version == "15"
 
-- name: Install telegraf
+- name: Add go repository apt key for Ubuntu
+  apt_key:
+    url: "https://repos.influxdata.com/influxdb.key"
+    validate_certs: no
+    state: present
+  when: ansible_distribution == 'Ubuntu' 
+
+- name: Add go repository for DEB
+  apt_repository:
+    repo: "deb https://repos.influxdata.com/ubuntu {{ ansible_facts['distribution_release'] }} stable"    
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install telegraf for SLES
   zypper:
     name: telegraf
     state: present
     update_cache: yes
   when: ansible_distribution == "SLES"
+
+- name: Install telegraf for Ubuntu
+  apt:
+    name: telegraf
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
 
 - name: Create telegraf conf directory
   file:

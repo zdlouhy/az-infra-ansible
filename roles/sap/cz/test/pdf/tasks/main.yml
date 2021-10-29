@@ -9,6 +9,18 @@
 #-------------
 # LVM + mount
 #-------------
+- name: Build hosts file (backups will be made)
+  lineinfile: >
+    dest=/etc/sysconfig/network/config
+    regexp='^NETCONFIG_DNS_STATIC_SEARCHLIST=\"\"'
+    line='NETCONFIG_DNS_STATIC_SEARCHLIST=\"t.cz.sap.kosik.systems\"'
+    state=present 
+  
+#- name: configure hostname and domain name
+#  net_system:
+#    domain_search:
+#      - t.cz.sap.kosik.systems
+
 - name: create new prim. partition lun0
   parted:
     device: /dev/disk/azure/scsi1/lun0

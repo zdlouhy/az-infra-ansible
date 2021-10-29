@@ -4,6 +4,7 @@
   become: yes
   roles:
   - ../roles/common
+  - ../roles/monitoring/telegraf
 
 - hosts: shared_kosikca_hosts
   become: yes
