@@ -1,4 +1,6 @@
 ---
+domain_name: 't.cz.sap.kosik.systems'
+
 groups_present:
   - name: sapdev
     gid: 2003

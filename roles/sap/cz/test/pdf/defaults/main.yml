@@ -38,3 +38,5 @@ lvm_config:
       lvol: 
         - name:
           size:
+
+domain_name: 't.cz.sap.kosik.systems'

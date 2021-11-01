@@ -5,6 +5,7 @@
     name: main
 
     #- include: ../../../../../common_tasks/users.yml 
+- include: ../../../../../common_tasks/network_settings.yml
 
 #-------------
 # LVM + mount
