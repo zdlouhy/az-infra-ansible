@@ -1,11 +1,12 @@
 ---
 groups_present:
   - name: sapdev
-    gid: 2003
+    gid: 3003
   - name: sapsys
     gid: 1001
 
 groups_absent:
+        #  - name: sapdev
 
 users_present:
         #  - name: test.user2

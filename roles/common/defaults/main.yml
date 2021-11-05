@@ -24,26 +24,33 @@ common_packages:
 
 groups_present:
   - name: kosik_ops
-    gid: 2000
+    gid: 3000
   - name: kosik_devops
-    gid: 2001
+    gid: 3001
   - name: ansible
-    gid: 2002
+    gid: 3002
 
 groups_absent:
+        #  - name: ansible
+        #  - name: kosik_ops
+        #  - name: kosik_devops
 
 users_present:
   - name: ansible
     uid: 4000
+    #    groups: []
     groups: ['ansible']
   - name: jakub.rohovsky
     uid: 4001
+    #    groups: []
     groups: ['kosik_ops','kosik_devops']    
   - name: zdenek.dlouhy
     uid: 4002
+    #    groups: []
     groups: ['kosik_ops','kosik_devops']
   - name: vaclav.sedivy
     uid: 4003
+    #    groups: []
     groups: ['kosik_ops','kosik_devops']
 
 users_absent:
