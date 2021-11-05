@@ -6,20 +6,16 @@
 
 - include: ../../../../../common_tasks/users.yml 
 
-#-------------
+#------------- 
 # LVM + mount
 #-------------
-- name: Build hosts file (backups will be made)
-  lineinfile: >
-    dest=/etc/sysconfig/network/config
-    regexp='^NETCONFIG_DNS_STATIC_SEARCHLIST=\"\"'
-    line='NETCONFIG_DNS_STATIC_SEARCHLIST=\"t.cz.sap.kosik.systems\"'
-    state=present 
-  
-#- name: configure hostname and domain name
-#  net_system:
-#    domain_search:
-#      - t.cz.sap.kosik.systems
+- name: Edit neconfig file
+  lineinfile:
+    path: /etc/sysconfig/network/config
+    regexp: '^NETCONFIG_DNS_STATIC_SEARCHLIST=\"\"'
+    line: "NETCONFIG_DNS_STATIC_SEARCHLIST=\"{{ domain_name }}\""
+    state: present 
+  notify: 'force apply netconfig changes'
 
 - name: create new prim. partition lun0
   parted:
