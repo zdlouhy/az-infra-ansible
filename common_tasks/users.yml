@@ -9,7 +9,7 @@
 
 - name: manage absent groups
   group:
-    name: "{{ item }}"
+    name: "{{ item.name }}"
     state: absent
   with_items: "{{ groups_absent }}"
   when: groups_absent is iterable
