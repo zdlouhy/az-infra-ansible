@@ -103,7 +103,7 @@
     vg: vg_data
     lv: lv_data
     opts: "-i6 -I 256K"
-    size: 1572840M
+    size: 3145704M
 
 - name: create a logical volume log
   lvol:
