@@ -1,0 +1,43 @@
+---
+domain_name: 's.cz.sap.kosik.systems'
+
+groups_present:
+  - name: sapdev
+    gid: 3003
+  - name: sapsys
+    gid: 1001
+
+groups_absent:
+        #  - name: sapdev
+
+users_present:
+        #  - name: test.user2
+        #    groups: ['sapdev']
+        #  - name: petr.tucek
+        #    groups: ['kosik_ops']
+        #  - name: ansible
+        #    groups: ['ansible']
+
+
+users_absent:
+        #  - test.user
+        #  - test.user2
+
+lvm_config:
+  lvg:  
+    - name: "lvg0"
+      partitions:
+        - name: "partition0"
+          path:
+          number:
+      lvol: 
+        - name:
+          size:
+    - name: "lvg1"
+      partitions:
+        - name: "partition1"
+          path:
+          number:
+      lvol: 
+        - name:
+          size:

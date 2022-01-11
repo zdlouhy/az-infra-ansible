@@ -1,0 +1,68 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+
+- name: Edit and apply neconfig
+  lineinfile:
+    path: /etc/sysconfig/network/config
+    regexp: '^NETCONFIG_DNS_STATIC_SEARCHLIST=\"\"'
+    line: "NETCONFIG_DNS_STATIC_SEARCHLIST=\"{{ domain_name }}\""
+    state: present
+  notify: 'force apply netconfig changes'
+
+#-------------
+# LVM + mount
+#-------------
+- name: create new prim. partition lun0
+  parted:
+    device: /dev/disk/azure/scsi1/lun0
+    number: 1
+    state: present
+
+- name: Create a volume group on top of lun0 with physical extent size 4MB
+  lvg:
+    vg: vg_usrsap
+    pvs: 
+      - /dev/disk/azure/scsi1/lun0-part1
+    pesize: "4"
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_usrsap
+    lv: lv_usrsap
+    size: 65532M
+
+
+- name: create a xfs filesystem on lv_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_usrsap-lv_usrsap
+
+- name: Get UUID of the lv_usrsap lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_usrsap-lv_usrsap)
+  register: uuid_data
+
+
+- name: mount usrsap
+  mount:
+    path: /usr/sap
+    src: "UUID={{ uuid_data.stdout }}"
+    fstype: xfs
+    state: mounted  
+
+
+
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'] }}"
+    #    #
+    #    #- name: test hash
+    #    #  debug:
+    #    #    msg: "{{ item.name }}"
+    #    #  with_items: "{{ lvm_config['lvg'].partitions['name'] }}"

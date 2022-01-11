@@ -1,0 +1,16 @@
+---
+- name: Include vars.
+  include_vars:
+    file: defaults/main.yml
+    name: main
+
+- include: ../../../../../common_tasks/users.yml 
+
+- name: Edit and apply neconfig
+  lineinfile:
+    path: /etc/sysconfig/network/config
+    regexp: '^NETCONFIG_DNS_STATIC_SEARCHLIST=\"\"'
+    line: "NETCONFIG_DNS_STATIC_SEARCHLIST=\"{{ domain_name }}\""
+    state: present
+  notify: 'force apply netconfig changes'
+
