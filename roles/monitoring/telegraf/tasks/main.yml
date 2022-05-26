@@ -1,7 +1,7 @@
 ---
 - name: Add go repository for SLES
   zypper_repository:
-    repo: 'https://download.opensuse.org/repositories/devel:/languages:/go/SLE_15_SP2'
+    repo: "https://download.opensuse.org/repositories/devel:/languages:/go/SLE_{{ ansible_distribution_major_version }}_SP{{ service_pack_version }}"
     auto_import_keys: yes
     name: "go.repo"
     state: present

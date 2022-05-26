@@ -4,20 +4,17 @@ plain_host_names: true
 auth_source: auto
 
 include_vm_resource_groups:
-- rg-sapdev-cz-sandbox-hanadb
-- rg-sapdev-cz-sandbox-nfs
-- rg-sapdev-cz-sandbox-dialog
-- rg-sapdev-cz-sandbox-ascs
+- rg-sapdev-bg-sandbox-hanadb
+- rg-sapdev-bg-sandbox-app
 
 include_vmss_resource_groups:
 - '*'
 
 conditional_groups:
         #all_the_hosts: true
-  sap_cz_sandbox_hana_db_hosts: "'vma4s0' in name"
-  sap_cz_sandbox_dialog_hosts: "'vmk4s0' in name"
-  sap_cz_sandbox_nfs_hosts: "'vmk4snfs0' in name"
-  sap_cz_sandbox_ascs_hosts: "'vmk4sascs0' in name"
+  sap_bg_sandbox_hosts: "name | regex_search('^vm(mda|mva|mea|mwa)')"
+  sap_bg_sandbox_hanadb_hosts:  "name | regex_search('^vm(mda|mva)')"
+  sap_bg_sandbox_app_hosts: "name | regex_search('^vmm(ea|wa)')"
 
 
 hostvar_expressions:
@@ -27,8 +24,8 @@ hostvar_expressions:
   #  ansible_host: (public_dns_hostnames + private_ipv4_addresses) | first
 
 hostnames:
-        #- tags.vm_name
-        #- default  # special var that uses the default hashed name
+        # - tags.vm_name
+- default  # special var that uses the default hashed name
 
 keyed_groups:
         #- prefix: tag

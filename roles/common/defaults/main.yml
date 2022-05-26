@@ -48,12 +48,17 @@ users_present:
     uid: 4002
     #    groups: []
     groups: ['kosik_ops','kosik_devops']
-  - name: vaclav.sedivy
-    uid: 4003
+  - name: filip.gajdosik
+    uid: 4006
     #    groups: []
     groups: ['kosik_ops','kosik_devops']
+    #  - name: vaclav.sedivy
+    #    uid: 4003
+    #    #    groups: []
+    #    groups: ['kosik_ops','kosik_devops']
 
 users_absent:
+  - vaclav.sedivy
         #  - zdenek.dlouhy
         #  - ansible
         #  - jakub.rohovsky

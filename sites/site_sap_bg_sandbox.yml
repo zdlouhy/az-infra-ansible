@@ -1,0 +1,18 @@
+---
+# Apply common configuration to all hosts
+- hosts: all
+  become: yes
+  roles:
+  - ../roles/common
+  - ../roles/monitoring/telegraf
+
+- hosts: sap_bg_sandbox_hanadb_hosts
+  become: yes
+  roles:
+  - ../roles/sap/bg/sandbox/hanadb
+
+    #- hosts: sap_bg_sandbox_app_hosts
+    #  become: yes
+    #  roles:
+    #  - ../roles/sap/bg/sandbox/app
+    #    #  - ../roles/monitoring/telegraf
