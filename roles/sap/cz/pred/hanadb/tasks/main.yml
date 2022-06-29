@@ -110,20 +110,20 @@
     vg: vg_data
     lv: lv_data
     opts: "-i6 -I 256K"
-    size: 1572840M
+    size: 3145704M
 
 - name: create a logical volume log
   lvol:
     vg: vg_log
     lv: lv_log
     opts: "-i3 -I 64K"
-    size: 393204M
+    size: 786420M
 
 - name: create a logical volume shared
   lvol:
     vg: vg_shared
     lv: lv_shared
-    size: 524284M
+    size: 1048572M
 
 - name: create a xfs filesystem on lv_shared
   filesystem:
