@@ -40,7 +40,6 @@
     blkid -s UUID -o value $(readlink -f /dev/mapper/vg_usrsap-lv_usrsap)
   register: uuid_data
 
-
 - name: mount usrsap
   mount:
     path: /usr/sap
@@ -49,6 +48,54 @@
     state: mounted  
 
 
+# SUM disk (only on vmk4q01 vm)
+- name: test_condition
+  debug:
+    msg: "test condition"
+  when: "'01' in inventory_hostname"
+
+- name: create new prim. partition lun1
+  parted:
+    device: /dev/disk/azure/scsi1/lun1
+    number: 1
+    state: present
+  when: "'01' in inventory_hostname"
+
+- name: Create a volume group on top of lun1 with physical extent size 4MB
+  lvg:
+    vg: vg_sum
+    pvs:
+      - /dev/disk/azure/scsi1/lun1-part1
+    pesize: "4"
+  when: "'01' in inventory_hostname"
+
+- name: create a logical volume data
+  lvol:
+    vg: vg_sum
+    lv: lv_sum
+    size: 65532M
+  when: "'01' in inventory_hostname"
+
+- name: create a xfs filesystem on lv_usrsap
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vg_sum-lv_sum
+  when: "'01' in inventory_hostname"
+
+- name: Get UUID of the lv_sum lvm filesystem
+  shell: |
+    blkid -s UUID -o value $(readlink -f /dev/mapper/vg_sum-lv_sum)
+  register: uuid_sum
+  when: "'01' in inventory_hostname"
+
+
+- name: mount sum
+  mount:
+    path: /SUM
+    src: "UUID={{ uuid_sum.stdout }}"
+    fstype: xfs
+    state: mounted
+  when: "'01' in inventory_hostname"
 
     #    #- name: test hash
     #    #  debug:

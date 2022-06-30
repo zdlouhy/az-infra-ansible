@@ -20,7 +20,6 @@
   become: yes
   roles:
   - ../roles/sap/cz/pred/dialog
-  - ../roles/monitoring/telegraf
 
 - hosts: sap_cz_pred_ascs_hosts
   become: yes

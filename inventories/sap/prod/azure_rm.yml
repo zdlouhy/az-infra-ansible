@@ -1,8 +1,6 @@
 plugin: azure.azcollection.azure_rm
 plain_host_names: true
 
-#plugin: azure.azcollection.azure_rm
-
 auth_source: cli
 
 include_vm_resource_groups:
@@ -33,10 +31,6 @@ hostvar_expressions:
   #  some_statically_valued_var: ""
   #  ansible_host: (public_dns_hostnames + private_ipv4_addresses) | first
   ansible_host: private_ipv4_addresses | first
-
-hostnames:
-        #- tags.vm_name
-- default  # special var that uses the default hashed name
 
 keyed_groups:
 - prefix: tag
